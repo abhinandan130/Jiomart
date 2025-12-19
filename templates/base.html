@@ -1,0 +1,240 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}JioMart{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+    <!-- Base CSS -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+
+        <!-- LOGO -->
+        <a class="navbar-brand fw-bold"
+           href="{% url 'product_list' %}"
+           style="color:#0a5bdd;">
+            JioMart
+        </a>
+
+        <!-- SEARCH BAR -->
+        <form class="d-flex mx-auto" style="width:45%;">
+            <input
+                class="form-control"
+                type="search"
+                placeholder="Search for groceries, fruits, snacks..."
+                aria-label="Search"
+            >
+        </form>
+
+        <!-- RIGHT SIDE -->
+        <ul class="navbar-nav ms-auto align-items-center gap-3">
+
+            {% if request.session.user_id %}
+
+                <!-- CART ICON -->
+                <li class="nav-item">
+                    <a class="nav-link position-relative d-flex align-items-center"
+                    href="{% url 'cart_page' %}">
+
+                        <i class="bi bi-cart3 fs-5"></i>
+                        <span class="ms-1">Cart</span>
+
+                        <span
+                            id="cart-count"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            0
+                        </span>
+                    </a>
+                </li>
+
+
+                <!-- USER DROPDOWN -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown">
+
+                        <i class="bi bi-person-circle fs-5"></i>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="bi bi-person me-2"></i> My Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="bi bi-bag-check me-2"></i> Orders
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger"
+                               href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            {% else %}
+                <!-- NOT LOGGED IN (ACCOUNT ICON + LOGIN) -->
+                <li class="nav-item d-flex align-items-center">
+                    
+                    <a class="nav-link fw-semibold"
+                       href="{% url 'login' %}">
+                        <i class="bi bi-person-circle fs-5 me-1"></i>
+                        <span>Login</span>
+                    </a>
+                </li>
+            {% endif %}
+
+        </ul>
+    </div>
+</nav>
+<!-- ================= END NAVBAR ================= -->
+
+
+<!-- ================= PAGE CONTENT ================= -->
+<div class="container-fluid py-4">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} text-center">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+</div>
+<!-- ================= END PAGE CONTENT ================= -->
+
+
+
+<!-- ================= Footer CONTENT ================= -->
+
+<footer class="jm-footer mt-5 pt-5">
+    <div class="container">
+        <div class="row gy-4">
+
+            <!-- All Categories -->
+            <div class="col-md-2 col-sm-6">
+                <h6 class="footer-title">All Categories</h6>
+                <ul class="footer-list">
+                    <li>Grocery</li>
+                    <li>Electronics</li>
+                    <li>Fashion</li>
+                    <li>Home & Lifestyle</li>
+                    <li>Premium Fruits</li>
+                    <li>Books</li>
+                    <li>Furniture</li>
+                </ul>
+            </div>
+
+            <!-- Popular Categories -->
+            <div class="col-md-3 col-sm-6">
+                <h6 class="footer-title">Popular Categories</h6>
+                <ul class="footer-list">
+                    <li>Biscuits, Drinks & Packaged Foods</li>
+                    <li>Fruits & Vegetables</li>
+                    <li>Cooking Essentials</li>
+                    <li>Dairy & Bakery</li>
+                    <li>Personal Care</li>
+                    <li>Beauty</li>
+                    <li>Home</li>
+                </ul>
+            </div>
+
+            <!-- Customer Account -->
+            <div class="col-md-2 col-sm-6">
+                <h6 class="footer-title">Customer Account</h6>
+                <ul class="footer-list">
+                    <li>My Account</li>
+                    <li>My Orders</li>
+                    <li>Wishlist</li>
+                    <li>Delivery Addresses</li>
+                    <li>JioMart Wallet</li>
+                </ul>
+            </div>
+
+            <!-- Help & Support -->
+            <div class="col-md-2 col-sm-6">
+                <h6 class="footer-title">Help & Support</h6>
+                <ul class="footer-list">
+                    <li>About Us</li>
+                    <li>FAQ</li>
+                    <li>Terms & Conditions</li>
+                    <li>Privacy Policy</li>
+                    <li>Shipping & Delivery</li>
+                    <li>Cancellation & Return</li>
+                </ul>
+            </div>
+
+            <!-- Contact -->
+            <div class="col-md-3">
+                <h6 class="footer-title">Contact Us</h6>
+                <p class="footer-text">
+                    WhatsApp us: <strong>70003 70003</strong><br>
+                    Call us: <strong>1800 890 1222</strong><br>
+                    <small>8:00 AM to 8:00 PM, 365 days</small>
+                </p>
+
+                <h6 class="footer-title mt-3">Download the app</h6>
+                <div class="d-flex gap-2">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+                         height="40" alt="Google Play">
+                    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                         height="40" alt="App Store">
+                </div>
+            </div>
+
+        </div>
+
+        <hr class="footer-divider mt-4">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center pb-3">
+            <small class="text-muted">
+                © 2025 All rights reserved. Reliance Retail Ltd.
+            </small>
+            <small class="text-muted">
+                Best viewed on Edge, Firefox, Safari & Chrome
+            </small>
+        </div>
+    </div>
+</footer>
+
+
+<!-- ================= END Footer CONTENT ================= -->
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Cart JS -->
+<script src="{% static 'js/cart.js' %}"></script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

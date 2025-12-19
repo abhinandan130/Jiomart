@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Register | JioMart{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="card shadow-sm" style="width: 100%; max-width: 420px;">
+        <div class="card-body p-4">
+
+            <h4 class="text-center mb-4 fw-semibold">
+                Create your JioMart account
+            </h4>
+
+            <!-- Django messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} text-center py-2">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Full Name -->
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input
+                        type="text"
+                        name="name"
+                        class="form-control"
+                        placeholder="Enter your full name"
+                        required
+                    >
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="form-label">Email address</label>
+                    <input
+                        type="email"
+                        name="email"
+                        class="form-control"
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+
+                <!-- Phone -->
+                <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input
+                        type="text"
+                        name="phone"
+                        maxlength="10"
+                        class="form-control"
+                        placeholder="10-digit mobile number"
+                        required
+                    >
+                </div>
+
+                <!-- Address -->
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <textarea
+                        name="location"
+                        class="form-control"
+                        rows="2"
+                        placeholder="Enter delivery address"
+                        required
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    Register & Continue
+                </button>
+
+                <p class="text-center mt-3 mb-0" style="font-size:14px;">
+                    Already have an account?
+                    <a href="{% url 'login' %}" class="fw-semibold text-decoration-none">
+                        Login
+                    </a>
+                </p>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

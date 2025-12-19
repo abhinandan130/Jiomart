@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Order Placed{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+
+    <i class="bi bi-check-circle-fill text-success fs-1"></i>
+
+    <h3 class="mt-3">Order Placed Successfully 🎉</h3>
+
+    <p class="mt-2">
+        Order Number:
+        <strong>{{ order.order_number }}</strong>
+    </p>
+
+    <div class="card mt-4 mx-auto" style="max-width:600px;">
+        <div class="card-body">
+
+            <table class="table">
+                {% for item in order.items.all %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }} × ₹{{ item.price }}</td>
+                    <td class="text-end">₹{{ item.subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <hr>
+
+            <h5 class="text-end">
+                Total: ₹{{ order.total_amount }}
+            </h5>
+
+        </div>
+    </div>
+
+    <a href="/" class="btn btn-primary mt-4">
+        Continue Shopping
+    </a>
+
+    <a href="{% url 'download_invoice' order.order_number %}"
+        class="btn btn-outline-secondary mt-3">
+        <i class="bi bi-file-earmark-pdf"></i> Download Invoice
+    </a>
+</div>
+{% endblock %}

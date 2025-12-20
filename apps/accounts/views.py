@@ -5,6 +5,7 @@ from django.contrib import messages
 from .utils import send_otp_email
 from django.utils import timezone
 from datetime import timedelta
+from .decorators import nocache
 
 
 # =========================
@@ -38,7 +39,9 @@ def login_view(request):
 
         return redirect("verify_otp")
 
-    return render(request, "accounts/login.html")
+    return render(request, "accounts/login.html", {
+        "hide_footer": True
+    })
 
 
 # =========================
@@ -72,7 +75,9 @@ def register(request):
 
         return redirect("verify_otp")
 
-    return render(request, "accounts/register.html")
+    return render(request, "accounts/register.html", {
+        "hide_footer": True
+    })
 
 
 # =========================
@@ -114,7 +119,9 @@ def verify_otp(request):
             "shake": True
         })
 
-    return render(request, "accounts/verify_otp.html")
+    return render(request, "accounts/verify_otp.html", {
+        "hide_footer": True
+    })
 
 
 # =========================
@@ -157,7 +164,9 @@ def register_details(request):
 
         return redirect("verify_otp")
 
-    return render(request, "accounts/details.html", {"email": email})
+    return render(request, "accounts/details.html", {"email": email}, {
+        "hide_footer": True
+    })
 
 
 # =========================
@@ -179,10 +188,33 @@ def resend_otp(request):
 
 
 # =========================
+# Profile view
+# =========================
+@nocache
+def profile_view(request):
+    user_id = request.session.get("user_id")
+
+    if not user_id:
+        return redirect("login")
+
+    try:
+        user = Customer.objects.get(id=user_id)
+    except Customer.DoesNotExist:
+        request.session.flush()
+        return redirect("login")
+
+    return render(request, "accounts/profile.html", {
+        "user": user,
+        "hide_footer": True
+    })
+
+
+
+# =========================
 # LOGOUT
 # =========================
+@nocache
 def logout_view(request):
     request.session.flush()
     response = redirect("product_list")
-    response.delete_cookie("sessionid")
     return response

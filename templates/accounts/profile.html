@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-4">
+
+    <h5 class="fw-bold mb-3">My Account</h5>
+
+    <div class="row">
+
+        <!-- LEFT SIDEBAR -->
+        <div class="col-md-3">
+
+            <div class="card shadow-sm rounded-4">
+
+                <!-- USER CARD -->
+                <div class="card-body text-center border-bottom">
+                    <i class="bi bi-person-circle fs-1 text-primary"></i>
+                    <h6 class="mt-2 mb-0">{{ user.name }}</h6>
+                    <small class="text-muted">{{ user.email }}</small>
+                </div>
+
+                <!-- SIDEBAR MENU -->
+                <div class="list-group list-group-flush">
+
+                    <!-- MY ACCOUNT -->
+                    <a class="list-group-item d-flex justify-content-between align-items-center"
+                       data-bs-toggle="collapse"
+                       href="#accountMenu">
+                        <span><i class="bi bi-person me-2"></i> My Account</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+
+                    <div class="collapse show" id="accountMenu">
+                        <a href="{% url 'profile' %}" class="list-group-item ps-4 active-link">
+                            Account Information
+                        </a>
+                        <a href="#" class="list-group-item ps-4">Delivery Addresses</a>
+                        <a href="#" class="list-group-item ps-4">PAN Card Information</a>
+                    </div>
+
+                    <!-- ORDERS -->
+                    <a href="#" class="list-group-item">
+                        <i class="bi bi-bag-check me-2"></i> My Orders
+                    </a>
+
+                    <!-- WISHLIST -->
+                    <a href="#" class="list-group-item">
+                        <i class="bi bi-heart me-2"></i> Wishlist
+                    </a>
+
+                    <!-- PAYMENTS -->
+                    <a class="list-group-item d-flex justify-content-between align-items-center"
+                       data-bs-toggle="collapse"
+                       href="#paymentMenu">
+                        <span><i class="bi bi-credit-card me-2"></i> Payments Modes</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+
+                    <div class="collapse" id="paymentMenu">
+                        <a href="#" class="list-group-item ps-4">Saved Cards</a>
+                        <a href="#" class="list-group-item ps-4">Wallet</a>
+                    </div>
+
+                    <!-- HELP -->
+                    <a class="list-group-item d-flex justify-content-between align-items-center"
+                       data-bs-toggle="collapse"
+                       href="#helpMenu">
+                        <span><i class="bi bi-question-circle me-2"></i> Help & Support</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+
+                    <div class="collapse" id="helpMenu">
+                        <a href="#" class="list-group-item ps-4">FAQs</a>
+                        <a href="#" class="list-group-item ps-4">Contact Support</a>
+                    </div>
+
+                    <!-- LOGOUT -->
+                    <a href="{% url 'logout' %}" class="list-group-item text-danger">
+                        <i class="bi bi-box-arrow-right me-2"></i> Sign Out
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT CONTENT -->
+        <div class="col-md-9">
+
+            <div class="card shadow-sm rounded-4 p-4">
+
+                <h6 class="fw-bold mb-3">Account Information</h6>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <small class="text-muted">Full Name</small>
+                        <p class="fw-semibold mb-0">{{ user.name }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <small class="text-muted">Email ID</small>
+                        <p class="fw-semibold mb-0">{{ user.email }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <small class="text-muted">Mobile No</small>
+                        <p class="fw-semibold mb-0">
+                            {{ user.phone|default:"Not Provided" }}
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <small class="text-muted">Default Address</small>
+                        <p class="fw-semibold mb-0">
+                            {{ user.location|default:"No address added" }}
+                        </p>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary w-100 rounded-pill">
+                    Edit
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

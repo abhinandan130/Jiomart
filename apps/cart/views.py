@@ -3,11 +3,13 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, get_object_or_404
 from .models import Cart, CartItem
 from apps.products.models import Product
+from accounts.decorators import nocache
 
 
 # =====================================
 # ADD TO CART (HOME + BUY NOW)
 # =====================================
+@nocache
 @require_POST
 def add_to_cart(request, product_id):
     customer_id = request.session.get("user_id")
@@ -48,6 +50,7 @@ def add_to_cart(request, product_id):
 # =====================================
 # CART COUNT (NAVBAR)
 # =====================================
+@nocache
 def cart_count(request):
     customer_id = request.session.get("user_id")
 
@@ -66,6 +69,7 @@ def cart_count(request):
 # =====================================
 # CART PAGE
 # =====================================
+@nocache
 def cart_page(request):
     customer_id = request.session.get("user_id")
 
@@ -96,13 +100,15 @@ def cart_page(request):
 
     return render(request, "cart/cart.html", {
         "items": items,
-        "total": total
+        "total": total,
+        "hide_footer": True
     })
 
 
 # =====================================
 # UPDATE QUANTITY (+ / -)
 # =====================================
+@nocache
 @require_POST
 def update_cart_quantity(request):
     item_id = request.POST.get("item_id")

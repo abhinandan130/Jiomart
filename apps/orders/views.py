@@ -9,8 +9,10 @@ from .utils.invoice import generate_invoice_pdf
 from apps.cart.models import Cart, CartItem
 from .models import Order, OrderItem
 from apps.accounts.models import Customer
+from .decorators import nocache
 
 
+@nocache
 @require_POST
 @transaction.atomic
 def create_order(request):
@@ -66,6 +68,7 @@ def create_order(request):
     return redirect("order_success", order_number=order.order_number)
 
 
+@nocache
 def order_success(request, order_number):
     customer_id = request.session.get("user_id")
 
@@ -82,6 +85,7 @@ def order_success(request, order_number):
     })
 
 
+@nocache
 def download_invoice(request, order_number):
     customer_id = request.session.get("user_id")
 

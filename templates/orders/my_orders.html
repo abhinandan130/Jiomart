@@ -55,14 +55,9 @@
                 {% endfor %}
 
                 <div class="text-end mt-3">
-                    <a href="{% url 'order_detail' order.order_number %}"
+                    <a href="{% url 'orders:order_detail' order.order_number %}"
                        class="btn btn-outline-primary btn-sm">
                         View Details
-                    </a>
-
-                    <a href="{% url 'download_invoice' order.order_number %}"
-                       class="btn btn-outline-secondary btn-sm ms-2">
-                        Download Invoice
                     </a>
                 </div>
 

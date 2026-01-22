@@ -91,11 +91,8 @@
 
     <!-- ACTIONS -->
     <div class="d-flex justify-content-end gap-2">
-        <a href="{% url 'download_invoice' order.order_number %}" class="btn btn-outline-secondary">
-            <i class="bi bi-download me-1"></i> Download Invoice
-        </a>
 
-        <a href="{% url 'my_orders' %}" class="btn btn-primary">
+        <a href="{% url 'orders:my_orders' %}" class="btn btn-primary">
             Back to Orders
         </a>
     </div>

@@ -8,9 +8,12 @@ import environ
 from decouple import config
 from dotenv import load_dotenv
 
-load_dotenv()
-
+# -------------------------------------------------
+# BASE & ENV
+# -------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv()
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
@@ -18,61 +21,74 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-SECRET_KEY = env('SECRET_KEY')
-DEBUG = env('DEBUG')
+# -------------------------------------------------
+# SECURITY
+# -------------------------------------------------
+SECRET_KEY = env("SECRET_KEY")
+DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ["*"]
 
-
+# -------------------------------------------------
+# APPLICATIONS
+# -------------------------------------------------
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    
-    'apps.accounts',
-    'apps.products',
-    'apps.cart',
-    'apps.orders',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+
+    "apps.accounts.apps.AccountsConfig",
+    "apps.products",
+    "apps.cart",
+    "apps.orders",
+    "apps.payments",
 ]
 
+# -------------------------------------------------
+# MIDDLEWARE
+# -------------------------------------------------
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'jiomart_clone.urls'
+ROOT_URLCONF = "jiomart_clone.urls"
 
+# -------------------------------------------------
+# TEMPLATES
+# -------------------------------------------------
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [ BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'jiomart_clone.wsgi.application'
+WSGI_APPLICATION = "jiomart_clone.wsgi.application"
 
-
-# PostgreSQL Neon Database
+# -------------------------------------------------
+# DATABASE
+# -------------------------------------------------
 ENVIRONMENT = config("ENVIRONMENT", default="development")
 
 if ENVIRONMENT == "production":
-    # ✅ PRODUCTION → POSTGRES (Neon)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -84,72 +100,71 @@ if ENVIRONMENT == "production":
             "OPTIONS": {
                 "sslmode": "require",
             },
-            "CONN_MAX_AGE": 60,  # important for Neon
+            "CONN_MAX_AGE": 60,
         }
     }
-    print('Connecting to Neon Postgres database...')
-
+    print("Connecting to Neon Postgres database...")
 else:
-    # ✅ DEVELOPMENT → SQLITE (FAST)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
-    print('Connecting to SQLite3 database...')
+    print("Connecting to SQLite3 database...")
 
-
-
-# Password Validation
+# -------------------------------------------------
+# PASSWORD VALIDATION
+# -------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = []
 
-
-# Language and Time
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+# -------------------------------------------------
+# INTERNATIONALIZATION
+# -------------------------------------------------
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+# -------------------------------------------------
+# STATIC & MEDIA
+# -------------------------------------------------
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Static Files
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-
-
-# 🚀 Session Settings
-# 🚀 Session Settings
+# -------------------------------------------------
+# SESSION SETTINGS
+# -------------------------------------------------
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_HTTPONLY = True
-
-# ✅ User stays logged in until manual logout
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-
-# ✅ Session valid for 30 days
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
-
-# ✅ Extend session on every request
 SESSION_SAVE_EVERY_REQUEST = True
-
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
-
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
+# -------------------------------------------------
+# EMAIL (OTP)
+# -------------------------------------------------
+EMAIL_BACKEND = env("EMAIL_BACKEND")
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_PORT = env("EMAIL_PORT")
+EMAIL_USE_TLS = env("EMAIL_USE_TLS")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
-
-# 📩 Email OTP Settings (Gmail SMTP)
-EMAIL_BACKEND = env('EMAIL_BACKEND')
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_PORT = env('EMAIL_PORT')
-EMAIL_USE_TLS = env('EMAIL_USE_TLS')
-
-# ⚠️ Update your Gmail and App Password
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+# -------------------------------------------------
+# 💳 PAYMENT GATEWAYS
+# -------------------------------------------------
+RAZORPAY_KEY_ID = env("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = env("RAZORPAY_KEY_SECRET")

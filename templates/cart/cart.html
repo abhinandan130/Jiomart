@@ -22,118 +22,124 @@
 
     {% else %}
 
-    <div class="card shadow-sm">
-        <div class="card-body">
+    <div class="row">
 
-            <form method="post" action="{% url 'create_order' %}">
+        <!-- LEFT: CART ITEMS -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+
+                    {% for item in items %}
+<div class="row align-items-center mb-3" id="cart-item-{{ item.id }}">
+
+    <div class="col-md-2">
+        <img src="{{ item.image }}"
+             class="img-fluid border rounded"
+             style="width:70px;height:70px;object-fit:contain;">
+    </div>
+
+    <div class="col-md-4">
+        <h6 class="mb-1">{{ item.name }}</h6>
+        <small class="text-muted">₹ {{ item.price }}</small>
+    </div>
+
+    <div class="col-md-3 text-center">
+
+        <div class="d-flex justify-content-center align-items-center">
+
+            <!-- DECREASE -->
+            <button class="btn btn-sm btn-outline-secondary qty-btn"
+                    data-id="{{ item.id }}"
+                    data-action="decrease">
+                −
+            </button>
+
+            <!-- QUANTITY -->
+            <span class="mx-2 fw-semibold" id="qty-{{ item.id }}">
+                {{ item.quantity }}
+            </span>
+
+            <!-- INCREASE -->
+            <button class="btn btn-sm btn-outline-secondary qty-btn"
+                    data-id="{{ item.id }}"
+                    data-action="increase">
+                +
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-3 text-end">
+        <strong id="subtotal-{{ item.id }}">₹ {{ item.subtotal }}</strong>
+    </div>
+
+    {% if not forloop.last %}
+        <hr class="my-4">
+    {% endif %}
+
+</div>
+
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: ADDRESS + TOTAL -->
+        <div class="col-md-4">
+
+            <!-- 🔴 IMPORTANT: remove action, keep form only for JS -->
+            <form id="checkout-form">
                 {% csrf_token %}
 
-                <table class="table align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Product</th>
-                            <th class="text-center">Price</th>
-                            <th class="text-center">Qty</th>
-                            <th class="text-end">Subtotal</th>
-                        </tr>
-                    </thead>
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
 
-                    <tbody>
-                        {% for item in items %}
-                        <tr id="row-{{ item.id }}">
-                            <td>
-                                <div class="d-flex align-items-center gap-3">
-                                    <img src="{{ item.image }}"
-                                         class="border rounded"
-                                         style="width:60px;height:60px;object-fit:contain;">
-                                    <span class="fw-semibold">{{ item.name }}</span>
-                                </div>
-                            </td>
+                        <h5 class="mb-3">
+                            <i class="bi bi-geo-alt"></i> Delivery Address
+                        </h5>
 
-                            <td class="text-center">$ {{ item.price }}</td>
-
-                            <td class="text-center">
-                                <div class="d-inline-flex align-items-center gap-2">
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-outline-secondary qty-btn"
-                                        data-id="{{ item.id }}"
-                                        data-action="decrease">
-                                        <i class="bi bi-dash"></i>
-                                    </button>
-
-                                    <span class="fw-semibold" id="qty-{{ item.id }}">
-                                        {{ item.quantity }}
-                                    </span>
-
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-outline-secondary qty-btn"
-                                        data-id="{{ item.id }}"
-                                        data-action="increase">
-                                        <i class="bi bi-plus"></i>
-                                    </button>
-                                </div>
-                            </td>
-
-                            <td class="text-end fw-semibold" id="subtotal-{{ item.id }}">
-                                $ {{ item.subtotal }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-
-                <div class="d-flex justify-content-end mt-3">
-                    <h5>
-                        Total:
-                        <span class="text-success fw-bold" id="cart-total">
-                            $ {{ total }}
-                        </span>
-                    </h5>
-                </div>
-
-                <h5 class="mt-4 mb-3">
-                    <i class="bi bi-geo-alt"></i> Delivery Address
-                </h5>
-
-                {% if addresses %}
-                    <div class="list-group mb-4">
                         {% for address in addresses %}
-                        <label class="list-group-item d-flex gap-3">
-                            <input class="form-check-input mt-1"
+                        <div class="form-check mb-2">
+                            <input class="form-check-input"
                                    type="radio"
                                    name="address_id"
                                    value="{{ address.id }}"
                                    required>
-                            <div>
+                            <label class="form-check-label">
                                 <strong>{{ address.full_name }}</strong><br>
                                 {{ address.address_line }},
                                 {{ address.city }},
                                 {{ address.state }} - {{ address.pincode }}<br>
                                 <small class="text-muted">📞 {{ address.phone }}</small>
-                            </div>
-                        </label>
+                            </label>
+                        </div>
                         {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="alert alert-warning">
-                        No delivery address found.
-                    </div>
-                {% endif %}
 
-                <a href="{% url 'add_address' %}?next=cart_page"
-                   class="btn btn-outline-primary mb-4">
-                    <i class="bi bi-plus"></i> Add New Address
-                </a>
+                        <hr>
 
-                <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-success w-100">
+                        <div class="d-flex justify-content-between">
+                            <strong>Total</strong>
+                            <strong class="text-success">₹ {{ total }}</strong>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success btn-lg">
                         <i class="bi bi-credit-card"></i> Proceed to Checkout
                     </button>
                 </div>
-
             </form>
+
+            <div class="text-center mt-3">
+                <a href="{% url 'orders:add_address' %}" class="btn btn-link">
+                    + Add New Address
+                </a>
+            </div>
+
         </div>
     </div>
 
@@ -142,5 +148,24 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+document.getElementById("checkout-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const addressInput = document.querySelector('input[name="address_id"]:checked');
+    if (!addressInput) {
+        alert("Please select an address");
+        return;
+    }
+
+    const addressId = addressInput.value;
+
+    // ✅ Redirect to Razorpay checkout page
+    window.location.href = `/payments/checkout/?address_id=${addressId}`;
+});
+</script>
+
+
+
 <script src="{% static 'js/cart.js' %}"></script>
 {% endblock %}

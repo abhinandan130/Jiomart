@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5 text-center">
+    <h3>Confirm Payment</h3>
+    <p>Click below to complete your payment</p>
+
+    <button id="pay-now" class="btn btn-success btn-lg">
+        Pay Now
+    </button>
+</div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + "=")) {
+                cookieValue = cookie.substring(name.length + 1);
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie("csrftoken");
+
+
+document.getElementById("pay-now").onclick = async function () {
+
+    const addressId = "{{ address_id }}";
+
+    const res = await fetch("/orders/create/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ address_id: addressId })
+    });
+
+    const data = await res.json();
+
+    const options = {
+        key: data.key,
+        amount: data.amount,
+        currency: "INR",
+        name: "JioMart Clone",
+        description: "Order Payment",
+        order_id: data.razorpay_order_id,
+
+        handler: function (response) {
+            fetch("/payments/verify/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    order_number: data.order_number,
+                    razorpay_payment_id: response.razorpay_payment_id
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                window.location.href = data.redirect_url;
+            });
+        }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+};
+</script>
+
+{% endblock %}

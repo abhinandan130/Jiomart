@@ -53,3 +53,30 @@ document.addEventListener("DOMContentLoaded", () => {
 function getCSRFToken() {
     return document.querySelector("[name=csrfmiddlewaretoken]")?.value;
 }
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".product-section").forEach(section => {
+
+        const row = section.querySelector(".product-row");
+        const leftBtn = section.querySelector(".product-carousel-btn.left");
+        const rightBtn = section.querySelector(".product-carousel-btn.right");
+        const viewAll = section.querySelector(".view-all-link");
+
+        if (!row) return;
+
+        // Check if row overflows
+        const isOverflowing = row.scrollWidth > row.clientWidth;
+
+        if (isOverflowing) {
+            // Show arrows
+            if (leftBtn) leftBtn.style.display = "flex";
+            if (rightBtn) rightBtn.style.display = "flex";
+
+            // Show View All
+            if (viewAll) viewAll.style.display = "inline";
+        }
+    });
+
+});

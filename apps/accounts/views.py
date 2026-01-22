@@ -7,6 +7,10 @@ from django.utils import timezone
 from datetime import timedelta
 from .decorators import nocache
 
+from django.shortcuts import render, redirect, get_object_or_404
+from apps.accounts.models import Customer
+from apps.orders.models import Address 
+from apps.accounts.decorators import nocache
 
 # =========================
 # LOGIN
@@ -35,7 +39,7 @@ def login_view(request):
         request.session["email"] = email
         request.session.save()
 
-        return redirect("verify_otp")
+        return redirect("accounts:verify_otp")
 
     return render(request, "accounts/login.html", {
         "hide_footer": True,
@@ -53,7 +57,7 @@ def register(request):
 
         if Customer.objects.filter(email=email).exists():
             messages.error(request, "Email already registered. Please login.")
-            return redirect("login")
+            return redirect("accounts:login")
 
         user = Customer.objects.create(
             name=request.POST.get("name"),
@@ -73,7 +77,7 @@ def register(request):
         request.session["email"] = email
         request.session.save()
 
-        return redirect("verify_otp")
+        return redirect("accounts:verify_otp")
 
     return render(request, "accounts/register.html", {
         "hide_footer": True,
@@ -88,7 +92,7 @@ def verify_otp(request):
     email = request.session.get("email")
 
     if not email:
-        return redirect("login")
+        return redirect("accounts:login")
 
     user = Customer.objects.filter(email=email).first()
     if not user:
@@ -102,14 +106,14 @@ def verify_otp(request):
             expiry_time = user.otp_created_at + timedelta(minutes=5)
             if timezone.now() > expiry_time:
                 messages.error(request, "OTP expired! Please request a new one.")
-                return redirect("resend_otp")
+                return redirect("accounts:resend_otp")
 
         if entered_otp == user.otp:
             request.session["user_id"] = user.id
             request.session.save()
 
             if not user.is_registered:
-                return redirect("register_details")
+                return redirect("accounts:register_details")
 
             return redirect("product_list")
 
@@ -131,7 +135,7 @@ def register_details(request):
     email = request.session.get("email_pending")
 
     if not email:
-        return redirect("login")
+        return redirect("accounts:login")
 
     user = Customer.objects.filter(email=email).first()
 
@@ -162,7 +166,7 @@ def register_details(request):
         request.session.pop("email_pending", None)
         request.session.save()
 
-        return redirect("verify_otp")
+        return redirect("accounts:verify_otp")
 
     return render(request, "accounts/details.html", {"email": email}, {
         "hide_footer": True,
@@ -185,7 +189,7 @@ def resend_otp(request):
         send_otp_email(email, otp)
 
     messages.success(request, "New OTP sent to your email")
-    return redirect("verify_otp")
+    return redirect("accounts:verify_otp")
 
 
 # =========================
@@ -193,24 +197,34 @@ def resend_otp(request):
 # =========================
 @nocache
 def profile_view(request):
-    user_id = request.session.get("user_id")
+    customer_id = request.session.get("user_id")
+    if not customer_id:
+        return redirect("accounts:login")
 
-    if not user_id:
-        return redirect("login")
+    customer = get_object_or_404(Customer, id=customer_id)
+    section = request.GET.get("section", "account")
 
-    try:
-        user = Customer.objects.get(id=user_id)
-    except Customer.DoesNotExist:
-        request.session.flush()
-        return redirect("login")
+    # ✅ HANDLE PROFILE EDIT
+    if request.method == "POST":
+        customer.name = request.POST.get("name")
+        customer.phone = request.POST.get("phone")
+        customer.location = request.POST.get("location")
+        customer.save()
+        return redirect("/profile/?section=account")
 
-    return render(request, "accounts/profile.html", {
-        "user": user,
-        "hide_footer": True,
-        "hide_navitems": True
-    })
+    addresses = []
+    if section == "addresses":
+        addresses = Address.objects.filter(customer=customer).order_by("-created_at")
 
-
+    return render(
+        request,
+        "accounts/profile.html",
+        {
+            "user": customer,
+            "section": section,
+            "addresses": addresses,
+        }
+    )
 
 # =========================
 # LOGOUT

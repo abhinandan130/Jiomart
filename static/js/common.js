@@ -57,7 +57,6 @@ const showToast = (message, type = "success") => {
 /* ===============================
    CART COUNT (GLOBAL)
    =============================== */
-
 window.refreshCartCount = async function () {
     try {
         const res = await fetch("/api/cart/count/");
@@ -82,7 +81,6 @@ window.refreshCartCount = async function () {
 /* ===============================
    CART HOVER LOGIC (NO HTML HERE)
 =============================== */
-
 document.addEventListener("DOMContentLoaded", () => {
     const cartHover = document.querySelector(".cart-hover");
     const emptyBox = document.getElementById("cart-hover-empty");
@@ -153,63 +151,212 @@ document.addEventListener("DOMContentLoaded", () => {
    LIVE SEARCH SUGGESTIONS
 =============================== */
 
-document.addEventListener("DOMContentLoaded", () => {
-    const input = document.getElementById("search-input");
-    const dropdown = document.getElementById("search-dropdown");
+/* =========================
+   JIOMART SEARCH (COMMON)
+   ========================= */
 
-    if (!input || !dropdown) return;
+const searchInput = document.getElementById("search-input");
+const searchDropdown = document.getElementById("search-dropdown");
 
-    let controller = null;
+const suggestionsBox = document.getElementById("search-suggestions");
+const productsBox = document.getElementById("search-products");
+const categoriesBox = document.getElementById("search-categories");
+const brandsBox = document.getElementById("search-brands");
 
-    input.addEventListener("input", async () => {
-        const query = input.value.trim();
+let searchTimer = null;
 
-        if (query.length < 2) {
-            dropdown.classList.remove("show");
-            dropdown.innerHTML = "";
+if (searchInput) {
+    searchInput.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+
+        const query = searchInput.value.trim();
+        if (!query) {
+            hideSearchDropdown();
             return;
         }
 
-        if (controller) controller.abort();
-        controller = new AbortController();
+        searchTimer = setTimeout(() => {
+            fetchSearchResults(query);
+        }, 300); // debounce
+    });
+}
 
-        try {
-            const res = await fetch(
-                `/api/search/suggestions/?q=${encodeURIComponent(query)}`,
-                { signal: controller.signal }
-            );
+async function fetchSearchResults(query) {
+    try {
+        const res = await fetch(`/api/search/?q=${encodeURIComponent(query)}`);
+        if (!res.ok) return;
 
-            const data = await res.json();
+        const data = await res.json();
+        renderSearchResults(data);
+    } catch (err) {
+        console.error("Search error:", err);
+    }
+}
 
-            if (!data.results.length) {
-                dropdown.innerHTML = `
-                    <div class="search-item text-muted">
-                        No results found
-                    </div>
-                `;
-                dropdown.classList.add("show");
-                return;
+function renderSearchResults(data) {
+    // show dropdown
+    searchDropdown.classList.remove("d-none");
+
+    /* -------- Suggestions -------- */
+    suggestionsBox.innerHTML = "";
+
+    data.suggestions.forEach(text => {
+        const li = document.createElement("li");
+        li.textContent = text;
+
+        li.addEventListener("click", (e) => {
+            e.preventDefault();      // ⬅ STOP form submit
+            e.stopPropagation();     // ⬅ STOP bubbling
+
+            const product = data.products.find(p => p.name === text);
+
+            if (product && product.category) {
+                window.location.href = `/category/${encodeURIComponent(product.category)}/`;
+            } else {
+                // fallback only if category missing
+                searchInput.value = text;
+                searchInput.form.submit();
             }
+        });
 
-            dropdown.innerHTML = data.results.map(item => `
-                <div class="search-item"
-                     onclick="window.location.href='/?q=${encodeURIComponent(item.name)}'">
-                    ${item.name}
+        suggestionsBox.appendChild(li);
+    });
+
+
+
+    /* -------- Products -------- */
+    productsBox.innerHTML = "";
+
+    data.products.forEach(p => {
+        productsBox.innerHTML += `
+            <div class="search-product-card"
+                data-product-id="${p.id}"
+                data-category="${p.category}">
+
+                <img src="${p.image}" alt="${p.name}">
+
+                <div class="search-product-info">
+                    <div class="search-product-name">${p.name}</div>
+                    <div class="search-product-price">₹${p.price}</div>
+
+                    <button
+                        class="btn btn-sm btn-outline-primary search-add-btn"
+                        data-product-id="${p.id}">
+                        Add +
+                    </button>
                 </div>
-            `).join("");
-
-            dropdown.classList.add("show");
-
-        } catch (err) {
-            if (err.name !== "AbortError") {
-                console.error("Search error:", err);
-            }
-        }
+            </div>
+        `;
     });
 
-    document.addEventListener("click", (e) => {
-        if (!e.target.closest(".search")) {
-            dropdown.classList.remove("show");
-        }
+
+    /* -------- Categories -------- */
+    categoriesBox.innerHTML = "";
+
+    data.categories.forEach(category => {
+        const chip = document.createElement("span");
+        chip.className = "search-chip";
+        chip.textContent = category;
+
+        chip.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = `/category/${encodeURIComponent(category)}/`;
+        });
+
+        categoriesBox.appendChild(chip);
     });
+
+
+
+    /* -------- Brands -------- */
+    brandsBox.innerHTML = "";
+
+    data.brands.forEach(brand => {
+        const chip = document.createElement("span");
+        chip.className = "search-chip";
+        chip.textContent = brand;
+
+        chip.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = `/brand/${encodeURIComponent(brand)}/`;
+        });
+
+        brandsBox.appendChild(chip);
+    });
+
+}
+
+function hideSearchDropdown() {
+    searchDropdown.classList.add("d-none");
+}
+
+/* -------- Click outside to close -------- */
+document.addEventListener("click", (e) => {
+    if (!searchDropdown.contains(e.target) && !searchInput.contains(e.target)) {
+        hideSearchDropdown();
+    }
 });
+
+
+
+// SEARCH DROPDOWN PRODUCT INTERACTIONS
+productsBox.addEventListener("click", function (e) {
+
+    /* =========================
+       ADD TO CART
+       ========================= */
+    if (e.target.classList.contains("search-add-btn")) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 🔐 LOGIN CHECK
+        if (!window.IS_LOGGED_IN) {
+            const modal = new bootstrap.Modal(
+                document.getElementById("loginRequiredModal")
+            );
+            modal.show();
+            return;
+        }
+
+
+        const productId = e.target.dataset.productId;
+
+        fetch(`/api/cart/add/${productId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken(),
+            }
+        })
+        .then(res => {
+            if (res.ok) {
+                refreshCartCount();
+            } else {
+                console.error("Add to cart failed:", res.status);
+            }
+        })
+        .catch(err => console.error("Add to cart error:", err));
+
+        return;
+    }
+
+
+    /* =========================
+       PRODUCT CARD CLICK
+       ========================= */
+    const card = e.target.closest(".search-product-card");
+    if (!card) return;
+
+    const category = card.dataset.category;
+    if (category) {
+        window.location.href = `/category/${encodeURIComponent(category)}/`;
+    }
+});
+
+
+
+
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+}

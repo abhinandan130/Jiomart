@@ -10,7 +10,6 @@
 
         <!-- LEFT SIDEBAR -->
         <div class="col-md-3">
-
             <div class="card shadow-sm rounded-4">
 
                 <!-- USER CARD -->
@@ -21,7 +20,7 @@
                 </div>
 
                 <!-- SIDEBAR MENU -->
-                <div class="list-group list-group-flush">
+                <div class="list-group list-group-flush profile-sidebar">
 
                     <!-- MY ACCOUNT -->
                     <a class="list-group-item d-flex justify-content-between align-items-center"
@@ -32,20 +31,35 @@
                     </a>
 
                     <div class="collapse show" id="accountMenu">
-                        <a href="{% url 'profile' %}" class="list-group-item ps-4 active-link">
+
+                        <a href="?section=account"
+                           class="list-group-item ps-4 d-flex align-items-center gap-2 {% if section == 'account' %}active{% endif %}">
+                            <i class="bi bi-person"></i>
                             Account Information
                         </a>
-                        <a href="#" class="list-group-item ps-4">Delivery Addresses</a>
-                        <a href="#" class="list-group-item ps-4">PAN Card Information</a>
+
+                        <a href="?section=addresses"
+                           class="list-group-item ps-4 d-flex align-items-center gap-2 {% if section == 'addresses' %}active{% endif %}">
+                            <i class="bi bi-geo-alt"></i>
+                            Delivery Addresses
+                        </a>
+
+                        <a href="?section=pan"
+                           class="list-group-item ps-4 d-flex align-items-center gap-2 {% if section == 'pan' %}active{% endif %}">
+                            <i class="bi bi-card-text"></i>
+                            PAN Card Information
+                        </a>
+
                     </div>
 
                     <!-- ORDERS -->
-                    <a href="#" class="list-group-item">
+                    <a href="{% url 'orders:my_orders' %}" class="list-group-item">
                         <i class="bi bi-bag-check me-2"></i> My Orders
                     </a>
 
                     <!-- WISHLIST -->
-                    <a href="#" class="list-group-item">
+                    <a href="?section=wishlist"
+                       class="list-group-item {% if section == 'wishlist' %}active{% endif %}">
                         <i class="bi bi-heart me-2"></i> Wishlist
                     </a>
 
@@ -57,9 +71,15 @@
                         <i class="bi bi-chevron-down"></i>
                     </a>
 
-                    <div class="collapse" id="paymentMenu">
-                        <a href="#" class="list-group-item ps-4">Saved Cards</a>
-                        <a href="#" class="list-group-item ps-4">Wallet</a>
+                    <div class="collapse {% if section in 'cards wallet' %}show{% endif %}" id="paymentMenu">
+                        <a href="?section=cards"
+                           class="list-group-item ps-4 {% if section == 'cards' %}active{% endif %}">
+                            Saved Cards
+                        </a>
+                        <a href="?section=wallet"
+                           class="list-group-item ps-4 {% if section == 'wallet' %}active{% endif %}">
+                            Wallet
+                        </a>
                     </div>
 
                     <!-- HELP -->
@@ -70,13 +90,19 @@
                         <i class="bi bi-chevron-down"></i>
                     </a>
 
-                    <div class="collapse" id="helpMenu">
-                        <a href="#" class="list-group-item ps-4">FAQs</a>
-                        <a href="#" class="list-group-item ps-4">Contact Support</a>
+                    <div class="collapse {% if section in 'faq support' %}show{% endif %}" id="helpMenu">
+                        <a href="?section=faq"
+                           class="list-group-item ps-4 {% if section == 'faq' %}active{% endif %}">
+                            FAQs
+                        </a>
+                        <a href="?section=support"
+                           class="list-group-item ps-4 {% if section == 'support' %}active{% endif %}">
+                            Contact Support
+                        </a>
                     </div>
 
                     <!-- LOGOUT -->
-                    <a href="{% url 'logout' %}" class="list-group-item text-danger">
+                    <a href="{% url 'accounts:logout' %}" class="list-group-item text-danger">
                         <i class="bi bi-box-arrow-right me-2"></i> Sign Out
                     </a>
 
@@ -86,54 +112,132 @@
 
         <!-- RIGHT CONTENT -->
         <div class="col-md-9">
-
             <div class="card shadow-sm rounded-4 p-4">
 
-                <h6 class="fw-bold mb-3">Account Information</h6>
+                {% if section == "account" %}
+                    <h6 class="fw-bold mb-3">Account Information</h6>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="mb-3">
                         <small class="text-muted">Full Name</small>
                         <p class="fw-semibold mb-0">{{ user.name }}</p>
                     </div>
-                </div>
+                    <hr>
 
-                <hr>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="mb-3">
                         <small class="text-muted">Email ID</small>
                         <p class="fw-semibold mb-0">{{ user.email }}</p>
                     </div>
-                </div>
+                    <hr>
 
-                <hr>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="mb-3">
                         <small class="text-muted">Mobile No</small>
                         <p class="fw-semibold mb-0">
                             {{ user.phone|default:"Not Provided" }}
                         </p>
                     </div>
-                </div>
+                    <hr>
 
-                <hr>
-
-                <div class="row mb-4">
-                    <div class="col-md-8">
+                    <div class="mb-4">
                         <small class="text-muted">Default Address</small>
                         <p class="fw-semibold mb-0">
                             {{ user.location|default:"No address added" }}
                         </p>
                     </div>
-                </div>
 
-                <button class="btn btn-primary w-100 rounded-pill">
-                    Edit
-                </button>
+                    <!-- EDIT BUTTON -->
+                    <button class="btn btn-primary w-100 rounded-pill"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editProfileModal">
+                        Edit
+                    </button>
+
+                {% elif section == "addresses" %}
+                    <h6 class="fw-bold mb-3">Delivery Addresses</h6>
+
+                    {% if addresses %}
+                        <div class="row">
+                            {% for address in addresses %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card p-3 h-100">
+                                        <h6 class="fw-semibold mb-1">{{ address.full_name }}</h6>
+                                        <small class="text-muted">{{ address.phone }}</small>
+                                        <p class="mt-2 mb-2">
+                                            {{ address.address_line }}<br>
+                                            {{ address.city }}, {{ address.state }} - {{ address.pincode }}
+                                        </p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No addresses added yet.</p>
+                    {% endif %}
+
+                {% elif section == "pan" %}
+                    <h6 class="fw-bold">PAN Card Information</h6>
+                    <p class="text-muted">PAN details not added.</p>
+
+                {% elif section == "wishlist" %}
+                    <h6 class="fw-bold">Wishlist</h6>
+                    <p class="text-muted">Your wishlist is empty.</p>
+
+                {% elif section == "cards" %}
+                    <h6 class="fw-bold">Saved Cards</h6>
+                    <p class="text-muted">No cards saved.</p>
+
+                {% elif section == "wallet" %}
+                    <h6 class="fw-bold">Wallet</h6>
+                    <p class="text-muted">Wallet balance: ₹0</p>
+
+                {% elif section == "faq" %}
+                    <h6 class="fw-bold">FAQs</h6>
+                    <p class="text-muted">Frequently asked questions will appear here.</p>
+
+                {% elif section == "support" %}
+                    <h6 class="fw-bold">Contact Support</h6>
+                    <p class="text-muted">Email us at support@jiomart.com</p>
+
+                {% endif %}
 
             </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mobile No</label>
+                        <input type="text" name="phone" class="form-control" value="{{ user.phone }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        <textarea name="location" class="form-control">{{ user.location }}</textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
